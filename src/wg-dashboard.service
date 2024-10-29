@@ -1,7 +1,7 @@
 [Unit]
 After=syslog.target network-online.target
-Wants=wg-quick.target
-ConditionPathIsDirectory=/etc/wireguard
+Wants=awg-quick.target
+ConditionPathIsDirectory=/etc/amnezia/amneziawg
 
 [Service]
 Type=forking

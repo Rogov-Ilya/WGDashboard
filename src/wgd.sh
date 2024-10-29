@@ -49,13 +49,13 @@ _check_and_set_venv(){
     	printf "[WGDashboard] Creating Python Virtual Environment under ./venv\n"
         { $pythonExecutable -m venv $VIRTUAL_ENV; } >> ./log/install.txt
     fi
-    
+
     if ! $venv_python --version > /dev/null 2>&1
     then
-    	printf "[WGDashboard] %s Python Virtual Environment under ./venv failed to create. Halting now.\n" "$heavy_crossmark"	
+    	printf "[WGDashboard] %s Python Virtual Environment under ./venv failed to create. Halting now.\n" "$heavy_crossmark"
     	kill  $TOP_PID
     fi
-    
+
     . ${VIRTUAL_ENV}/bin/activate
 }
 
@@ -76,7 +76,7 @@ _determineOS(){
 _installPython(){
 	case "$OS" in
 		ubuntu|debian)
-			{ sudo apt update ; sudo apt-get install -y python3 net-tools; printf "\n\n"; } &>> ./log/install.txt 
+			{ sudo apt update ; sudo apt-get install -y python3 net-tools; printf "\n\n"; } &>> ./log/install.txt
 		;;
 		centos|fedora|redhat|rhel|almalinux)
 			if command -v dnf &> /dev/null; then
@@ -89,7 +89,7 @@ _installPython(){
 				{ sudo apk update; sudo apk add python3 net-tools --no-cache; printf "\n\n"; } >> ./log/install.txt
 			;;
 	esac
-	
+
 	if ! python3 --version > /dev/null 2>&1
 	then
 		printf "[WGDashboard] %s Python is still not installed, halting script now.\n" "$heavy_crossmark"
@@ -129,7 +129,7 @@ _installPythonVenv(){
 			;;
 		esac
 	fi
-	
+
 	if ! $pythonExecutable -m venv -h > /dev/null 2>&1
 	then
 		printf "[WGDashboard] %s Python Virtual Environment is still not installed, halting script now.\n" "$heavy_crossmark"
@@ -167,7 +167,7 @@ _installPythonPip(){
 			;;
 		esac
     fi
-    	
+
 	if ! $pythonExecutable -m pip -h > /dev/null 2>&1
 	then
 		printf "[WGDashboard] %s Python Package Manager (PIP) is still not installed, halting script now.\n" "$heavy_crossmark"
@@ -179,25 +179,26 @@ _installPythonPip(){
 }
 
 _checkWireguard(){
-    if ! command -v wg > /dev/null 2>&1 || ! command -v wg-quick > /dev/null 2>&1
+    if ! command -v awg > /dev/null 2>&1 || ! command -v awg-quick > /dev/null 2>&1
     then
+        sudo awg --version
         case "$OS" in
             ubuntu|debian)
-                { 
-                    sudo apt update && sudo apt-get install -y wireguard; 
-                    printf "\n[WGDashboard] WireGuard installed on %s.\n\n" "$OS"; 
+                {
+                    sudo apt update && sudo apt-get install -y wireguard;
+                    printf "\n[WGDashboard] WireGuard installed on %s.\n\n" "$OS";
                 } &>> ./log/install.txt
             ;;
             centos|fedora|redhat|rhel|almalinux)
-                { 
+                {
                     sudo dnf install -y wireguard-tools;
-                    printf "\n[WGDashboard] WireGuard installed on %s.\n\n" "$OS"; 
+                    printf "\n[WGDashboard] WireGuard installed on %s.\n\n" "$OS";
                 } &>> ./log/install.txt
             ;;
             alpine)
-                { 
-                    sudo apk update && sudo apk add wireguard-tools --no-cache;
-                    printf "\n[WGDashboard] WireGuard installed on %s.\n\n" "$OS"; 
+                {
+                    sudo apk update && sudo apk add amneziawg --no-cache;
+                    printf "\n[WGDashboard] WireGuard installed on %s.\n\n" "$OS";
                 } &>> ./log/install.txt
             ;;
             *)
@@ -218,7 +219,7 @@ _checkPythonVersion(){
 	version_pass=$($pythonExecutable -c 'import sys; print("1") if (sys.version_info.major == 3 and sys.version_info.minor >= 10) else print("0");')
 	version=$($pythonExecutable --version)
 	if [ $version_pass == "1" ]
-	  	then 
+	  	then
 			return;
 	elif python3.10 --version > /dev/null 2>&1
 		then
@@ -241,9 +242,9 @@ _checkPythonVersion(){
 
 install_wgd(){
     printf "[WGDashboard] Starting to install WGDashboard\n"
-    
+
     if [ ! -d "log" ]
-	  then 
+	  then
 		printf "[WGDashboard] Creating ./log folder\n"
 		mkdir "log"
 	fi
@@ -255,15 +256,15 @@ install_wgd(){
     else
     	printf "[WGDashboard] %s Python is installed\n" "$heavy_checkmark"
     fi
-    
+
     _checkPythonVersion
     _installPythonVenv
     _installPythonPip
 	  _checkWireguard
-    sudo chmod -R 755 /etc/wireguard/
+    sudo chmod -R 755 /etc/amnezia/amneziawg
 
-    if [ ! -d "db" ] 
-		then 
+    if [ ! -d "db" ]
+		then
 			printf "[WGDashboard] Creating ./db folder\n"
 			mkdir "db"
     fi
@@ -343,16 +344,16 @@ stop_wgd() {
 
 start_core() {
 	# Re-assign config_files to ensure it includes any newly created configurations
-	local config_files=$(find /etc/wireguard -type f -name "*.conf")
-	
+	local config_files=$(find /etc/amnezia/amneziawg -type f -name "*.conf")
+
 	# Set file permissions
-	find /etc/wireguard -type f -name "*.conf" -exec chmod 600 {} \;
+	find /etc/amnezia/amneziawg -type f -name "*.conf" -exec chmod 600 {} \;
 	find "$iptable_dir" -type f -name "*.sh" -exec chmod +x {} \;
-	
+
 	# Start WireGuard for each config file
 	for file in $config_files; do
 		config_name=$(basename "$file" ".conf")
-		wg-quick up "$config_name"
+		awg-quick up "$config_name"
 	done
 }
 
@@ -373,11 +374,11 @@ update_wgd() {
 	else
 		printf "[WGDashboard] %s Python is installed\n" "$heavy_checkmark"
 	fi
-	
+
 	_checkPythonVersion
 	_installPythonVenv
-	_installPythonPip	
-	
+	_installPythonPip
+
 	new_ver=$($venv_python -c "import json; import urllib.request; data = urllib.request.urlopen('https://api.github.com/repos/donaldzou/WGDashboard/releases/latest').read(); output = json.loads(data);print(output['tag_name'])")
 	printf "%s\n" "$dashes"
 	printf "[WGDashboard] Are you sure you want to update to the %s? (Y/N): " "$new_ver"
