@@ -14,7 +14,7 @@ services:
       - 51820:51820/udp
     volumes: # Can be customized to only the /opt/wireguarddashboard/src/db folder with the /opt/wireguarddashboard/src/wg-dashboard.ini file.
       - ./app:/opt/wireguarddashboard
-      - ./conf:/etc/wireguard
+      - ./conf:/etc/amnezia/amneziawg
     cap_add:
       - NET_ADMIN
 

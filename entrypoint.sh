@@ -30,17 +30,17 @@ ensure_installation() {
   fi
 
   # This first step is to ensure the wg0.conf file exists, and if not, then its copied over from the ephemeral container storage.
-  if [ ! -f "/etc/wireguard/wg0.conf" ]; then
+  if [ ! -f "/etc/amnezia/amneziawg/wg0.conf" ]; then
     echo "Standard wg0 Configuration file not found, grabbing template."
-    cp -a "/setup/conf/wg0.conf" "/etc/wireguard/wg0.conf"
+    cp -a "/setup/conf/wg0.conf" "/etc/amnezia/amneziawg/wg0.conf"
 
     echo "Setting a secure private key."
 
     local privateKey
     privateKey=$(wg genkey)
 
-    sed -i "s|^PrivateKey =$|PrivateKey = ${privateKey}|g" /etc/wireguard/wg0.conf
-    sed -i "s|^PrivateKey *=.*$|PrivateKey = ${privateKey}|g" /etc/wireguard/wg0.conf
+    sed -i "s|^PrivateKey =$|PrivateKey = ${privateKey}|g" /etc/amnezia/amneziawg/wg0.conf
+    sed -i "s|^PrivateKey *=.*$|PrivateKey = ${privateKey}|g" /etc/amnezia/amneziawg/wg0.conf
     echo "Done setting template."
   else
     echo "Existing wg0 configuration file found, using that."
@@ -87,7 +87,7 @@ set_envvars() {
   #printf "\n------------- SETTING ENVIRONMENT VARIABLES ----------------\n"
 
   # Changing the DNS used for clients and the dashboard itself.
-  if [ "${global_dns}" != "$(grep "peer_global_dns = " /opt/wireguarddashboard/src/wg-dashboard.ini | awk '{print $NF}')" ]; then 
+  if [ "${global_dns}" != "$(grep "peer_global_dns = " /opt/wireguarddashboard/src/wg-dashboard.ini | awk '{print $NF}')" ]; then
     echo "Changing default dns."
 
     #sed -i "s/^DNS = .*/DNS = ${global_dns}/" /etc/wireguard/wg0.conf # Uncomment if you want to have DNS on server-level.
@@ -119,13 +119,13 @@ start_core() {
   bash wgd.sh start &>> /dev/null
 
   # Isolated peers feature, first converting the existing configuration files and the given names to arrays.
-  local configurations=(/etc/wireguard/*)
+  local configurations=(/etc/amnezia/amneziawg/*)
   IFS=',' read -r -a do_isolate <<< "${isolate}"
   non_isolate=()
 
   # Checking if there are matches between the two arrays.
   for config in "${configurations[@]}"; do
-    local config=$(echo "$config" | sed -e 's|.*/etc/wireguard/||' -e 's|\.conf$||')
+    local config=$(echo "$config" | sed -e 's|.*/etc/amnezia/amneziawg/||' -e 's|\.conf$||')
     found=false
     for interface in "${do_isolate[@]}"; do
       if [[ "$config" == "$interface" ]]; then
@@ -144,27 +144,27 @@ start_core() {
       echo "Found: $interface, stopping isolation checking."
       break
     else
-      if [ -f "/etc/wireguard/${interface}.conf" ]; then
+      if [ -f "/etc/amnezia/amneziawg/${interface}.conf" ]; then
         echo "Isolating interface:" $interface
-        upblocking=$(grep -c "PostUp = iptables -I FORWARD -i ${interface} -o ${interface} -j DROP" /etc/wireguard/${interface}.conf)
-        downblocking=$(grep -c "PreDown = iptables -D FORWARD -i ${interface} -o ${interface} -j DROP" /etc/wireguard/${interface}.conf)
+        upblocking=$(grep -c "PostUp = iptables -I FORWARD -i ${interface} -o ${interface} -j DROP" /etc/amnezia/amneziawg/${interface}.conf)
+        downblocking=$(grep -c "PreDown = iptables -D FORWARD -i ${interface} -o ${interface} -j DROP" /etc/amnezia/amneziawg/${interface}.conf)
 
         if [ "$upblocking" -lt 1 ] && [ "$downblocking" -lt 1 ]; then
-          sed -i "/PostUp =/a PostUp = iptables -I FORWARD -i ${interface} -o ${interface} -j DROP" /etc/wireguard/${interface}.conf
-          sed -i "/PreDown =/a PreDown = iptables -D FORWARD -i ${interface} -o ${interface} -j DROP" /etc/wireguard/${interface}.conf
+          sed -i "/PostUp =/a PostUp = iptables -I FORWARD -i ${interface} -o ${interface} -j DROP" /etc/amnezia/amneziawg/${interface}.conf
+          sed -i "/PreDown =/a PreDown = iptables -D FORWARD -i ${interface} -o ${interface} -j DROP" /etc/amnezia/amneziawg/${interface}.conf
         fi
       else
         echo "Configuration for $interface does not seem to exist, continuing."
       fi
     fi
   done
-  
+
   # Removing isolation for the configurations that did not match.
   for interface in "${non_isolate[@]}"; do
-    if [ -f "/etc/wireguard/${interface}.conf" ]; then
+    if [ -f "/etc/amnezia/amneziawg/${interface}.conf" ]; then
       echo "Removing Isolation if present for:" $interface
-      sed -i "/PostUp = iptables -I FORWARD -i ${interface} -o ${interface} -j DROP/d" /etc/wireguard/${interface}.conf
-      sed -i "/PreDown = iptables -D FORWARD -i ${interface} -o ${interface} -j DROP/d" /etc/wireguard/${interface}.conf
+      sed -i "/PostUp = iptables -I FORWARD -i ${interface} -o ${interface} -j DROP/d" /etc/amnezia/amneziawg/${interface}.conf
+      sed -i "/PreDown = iptables -D FORWARD -i ${interface} -o ${interface} -j DROP/d" /etc/amnezia/amneziawg/${interface}.conf
     else
       echo "Configuration for $interface does not seem to exist, continuing."
     fi
@@ -179,14 +179,14 @@ start_core() {
       break
     else
       echo "Enabling interface:" $interface
-      
-      local fileperms=$(stat -c "%a" /etc/wireguard/${interface}.conf)
+
+      local fileperms=$(stat -c "%a" /etc/amnezia/amneziawg/${interface}.conf)
       if [ $fileperms -eq 644 ]; then
         echo "Configuration is world accessible, adjusting."
-        chmod 600 "/etc/wireguard/${interface}.conf"    
+        chmod 600 "/etc/amnezia/amneziawg/${interface}.conf"
       fi
 
-      if [ -f "/etc/wireguard/${interface}.conf" ]; then
+      if [ -f "/etc/amnezia/amneziawg/${interface}.conf" ]; then
         wg-quick up $interface
       else
         echo "No corresponding configuration file found for $interface doing nothing."

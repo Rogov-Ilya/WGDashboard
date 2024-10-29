@@ -1,3 +1,11 @@
+FROM golang:1.22.3 AS awg
+COPY . /awg
+WORKDIR /awg
+RUN go mod download && \
+    go mod verify && \
+    go build -ldflags '-linkmode external -extldflags "-fno-PIC -static"' -v -o /usr/bin
+
+#ALpine
 FROM alpine:latest AS build
 LABEL maintainer="dselen@nerthus.nl"
 
@@ -15,8 +23,18 @@ ENV public_ip="0.0.0.0"
 # Doing package management operations, such as upgrading
 RUN apk update \
   && apk add --no-cache bash git tzdata \
-  iptables ip6tables openrc curl wireguard-tools \
+  iptables ip6tables openrc curl iproute2\
   sudo py3-psutil py3-bcrypt
+# AWG Realise
+ARG AWGTOOLS_RELEASE="1.0.20241018"
+# AWG Install
+RUN cd /usr/bin/ && \
+    wget https://github.com/amnezia-vpn/amneziawg-tools/releases/download/v${AWGTOOLS_RELEASE}/alpine-3.19-amneziawg-tools.zip && \
+    unzip -j alpine-3.19-amneziawg-tools.zip && \
+    chmod +x /usr/bin/awg /usr/bin/awg-quick && \
+    ln -s /usr/bin/awg /usr/bin/wg && \
+    ln -s /usr/bin/awg-quick /usr/bin/wg-quick
+COPY --from=0 /usr/bin/amneziawg-go /usr/bin/amneziawg-go
 
 # Using WGDASH -- like wg_net functionally as a ARG command. But it is needed in entrypoint.sh so it needs to be exported as environment variable.
 ENV WGDASH=/opt/wireguarddashboard
@@ -28,7 +46,7 @@ RUN mkdir -p /setup/conf && mkdir /setup/app && mkdir ${WGDASH}
 COPY ./src /setup/app/src
 
 # Set the volume to be used for WireGuard configuration persistency.
-VOLUME /etc/wireguard
+VOLUME etc/amnezia/amneziawg/
 VOLUME ${WGDASH}
 
 # Generate basic WireGuard interface. Echoing the WireGuard interface config for readability, adjust if you want it for efficiency.
