@@ -14,7 +14,7 @@ ensure_installation() {
     #mv /setup/app/.* "${WGDASH}"
 
     python3 -m venv "${WGDASH}"/src/venv
-    . "${WGDASH}/src/venv/bin/activate"
+        . "${WGDASH}/src/venv/bin/activate"
 
     # Extra step for Alpine
     mv  /usr/lib/python3.12/site-packages/psutil* "${WGDASH}"/src/venv/lib/python3.12/site-packages

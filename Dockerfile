@@ -24,7 +24,8 @@ ENV public_ip="0.0.0.0"
 RUN apk update \
   && apk add --no-cache bash git tzdata\
   iptables ip6tables openrc curl wget iproute2\
-  sudo py3-psutil py3-bcrypt py3-pip
+  sudo py3-psutil py3-bcrypt
+
 # AWG Realise
 ARG AWGTOOLS_RELEASE="1.0.20241018"
 # AWG Install
@@ -46,7 +47,6 @@ RUN mkdir -p /setup/conf && mkdir /setup/app && mkdir ${WGDASH}
 COPY ./src /setup/app/src
 
 # Set the volume to be used for WireGuard configuration persistency.
-VOLUME /setup/app/src
 VOLUME etc/amnezia/amneziawg/
 VOLUME ${WGDASH}
 #Create config awg
@@ -74,7 +74,7 @@ DNS = ${global_dns}" > /setup/conf/awg0.conf \
   && chmod 600 /setup/conf/awg0.conf
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD sh -c 'pgrep gunicorn > /dev/null && pgrep tail > /dev/null' || exit 1
+    CMD curl -s -o /dev/null -w "%{http_code}" http://localhost:10086/signin | grep -q "401" && exit 0 || exit 1
 
 # Copy the basic entrypoint.sh script.
 COPY entrypoint.sh /entrypoint.sh

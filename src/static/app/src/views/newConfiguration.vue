@@ -41,14 +41,17 @@ export default {
 		}
 	},
 	created() {
-		this.wireguardGenerateKeypair();	
+		this.wireguardGenerateKeypair();
+    this.wireguardGenerateAwgMarker();
 	},
 	methods: {
-		wireguardGenerateKeypair(){
-			const wg = window.wireguard.generateKeypair();
-			this.newConfiguration.PrivateKey = wg.privateKey;
-			this.newConfiguration.PublicKey = wg.publicKey;
-			this.newConfiguration.PresharedKey = wg.presharedKey;
+		wireguardGenerateKeypair() {
+      const wg = window.wireguard.generateKeypair();
+      this.newConfiguration.PrivateKey = wg.privateKey;
+      this.newConfiguration.PublicKey = wg.publicKey;
+      this.newConfiguration.PresharedKey = wg.presharedKey;
+    },
+    wireguardGenerateAwgMarker() {
       const awg = window.wireguard.generateAwgMarker();
       this.newConfiguration.Jc = awg.Jc;
       this.newConfiguration.Jmin = awg.Jmin;
@@ -90,7 +93,7 @@ export default {
 			}) === undefined && elements.find(x => {
 				return x.classList.contains("is-invalid")
 			}) === undefined
-		}	
+		}
 	},
 	watch: {
 		'newConfiguration.Address'(newVal){
@@ -112,7 +115,7 @@ export default {
 		'newConfiguration.ListenPort'(newVal){
 			let ele = document.querySelector("#ListenPort");
 			ele.classList.remove("is-invalid", "is-valid")
-			
+
 			if (newVal < 0 || newVal > 65353 || !Number.isInteger(newVal)){
 				ele.classList.add("is-invalid")
 			}else{
@@ -120,7 +123,7 @@ export default {
 			}
 		},
 		'newConfiguration.ConfigurationName'(newVal){
-			
+
 			let ele = document.querySelector("#ConfigurationName");
 			ele.classList.remove("is-invalid", "is-valid")
 			if (!/^[a-zA-Z0-9_=+.-]{1,15}$/.test(newVal) || newVal.length === 0 || this.store.Configurations.find(x => x.Name === newVal)){
@@ -132,7 +135,7 @@ export default {
 		'newConfiguration.PrivateKey'(newVal){
 			let ele = document.querySelector("#PrivateKey");
 			ele.classList.remove("is-invalid", "is-valid")
-			
+
 			try{
 				wireguard.generatePublicKey(newVal)
 				ele.classList.add("is-valid")
@@ -154,7 +157,7 @@ export default {
 					</h3>
 				</RouterLink>
 			</div>
-			
+
 			<form class="text-body d-flex flex-column gap-3"
 				@submit="(e) => {e.preventDefault(); this.saveNewConfiguration();}"
 			>
@@ -174,7 +177,7 @@ export default {
 									<li>Configuration name can only contain 15 lower/uppercase alphabet, numbers, "_"(underscore), "="(equal), "+"(plus), "."(period/dot), "-"(dash/hyphen)</li>
 								</ul>
 							</div>
-							
+
 						</div>
 					</div>
 				</div>
@@ -202,14 +205,14 @@ export default {
 							       v-model="this.newConfiguration.PublicKey" disabled
 							>
 						</div>
-						
+
 					</div>
-					
+
 				</div>
 				<div class="card rounded-3 shadow">
 					<div class="card-header">Listen Port</div>
 					<div class="card-body">
-						<input type="number" class="form-control" placeholder="0-65353" id="ListenPort" 
+						<input type="number" class="form-control" placeholder="0-65353" id="ListenPort"
 						       min="1"
 						       max="65353"
 						       v-model="this.newConfiguration.ListenPort"
@@ -229,8 +232,8 @@ export default {
 						<span class="badge rounded-pill text-bg-success ms-auto">{{ numberOfAvailableIPs }} Available IPs</span>
 					</div>
 					<div class="card-body">
-						<input type="text" class="form-control" 
-						       placeholder="Ex: 10.0.0.1/24" id="Address" 
+						<input type="text" class="form-control"
+						       placeholder="Ex: 10.0.0.1/24" id="Address"
 						       v-model="this.newConfiguration.Address"
 						       :disabled="this.loading"
 						       required>
@@ -239,7 +242,7 @@ export default {
 							<div v-else>
 								IP address & range is invalid.
 							</div>
-							
+
 						</div>
 					</div>
 				</div>
@@ -251,7 +254,7 @@ export default {
 								Optional Settings
 							</button>
 						</h2>
-						<div id="newConfigurationOptionalAccordionCollapse" 
+						<div id="newConfigurationOptionalAccordionCollapse"
 						     class="accordion-collapse collapse" data-bs-parent="#newConfigurationOptionalAccordion">
 							<div class="accordion-body d-flex flex-column gap-3">
 								<div class="card rounded-3">
@@ -354,7 +357,7 @@ export default {
 <!--						  <span class="visually-hidden">Loading...</span>-->
 						</span>
 					</span>
-					
+
 				</button>
 			</form>
 		</div>
