@@ -1,4 +1,4 @@
-import ipaddress, subprocess, datetime, os, util
+import ipaddress, subprocess, datetime, os, util, random
 from datetime import datetime, timedelta
 from flask import jsonify
 from util import *
@@ -121,10 +121,34 @@ class manageConfiguration:
         return good
 
     def addConfiguration(self, data, configs, WG_CONF_PATH):
-        output = ["[Interface]", "SaveConfig = true"]
-        required = ['addConfigurationPrivateKey', 'addConfigurationListenPort',
-                    'addConfigurationAddress', 'addConfigurationPreUp', 'addConfigurationPreDown',
-                    'addConfigurationPostUp', 'addConfigurationPostDown']
+        random.seed()
+        Jc = str(random.randint(3, 127))
+        Jmin = str(random.randint(3, 700))
+        Jmax = str(random.randint(Jmin+1, 1270))
+        S1 = str(random.randint(3, 127))
+        S2 = str(random.randint(3, 127))
+        H1 = str(random.randint(0x10000011, 0x7FFFFF00))
+        H2 = str(random.randint(0x10000011, 0x7FFFFF00))
+        H3 = str(random.randint(0x10000011, 0x7FFFFF00))
+        H4 = str(random.randint(0x10000011, 0x7FFFFF00))
+        output = ["[Interface]",
+        "SaveConfig = true",
+        "Jc = "+Jc,
+        "Jmin = "+Jmin,
+        "Jmax = "+Jmax,
+        "S1 = "+S1,
+        "S2 = "+S2,
+        "H1 = "+H1,
+        "H2 = "+H2,
+        "H3 = "+H3,
+        "H4 = "+H4]
+        required = ['addConfigurationPrivateKey',
+                    'addConfigurationListenPort',
+                    'addConfigurationAddress',
+                    'addConfigurationPreUp',
+                    'addConfigurationPreDown',
+                    'addConfigurationPostUp',
+                    'addConfigurationPostDown']
         for i in required:
             e = data[i]
             if len(e) != 0:

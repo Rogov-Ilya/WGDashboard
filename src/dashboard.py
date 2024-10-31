@@ -457,6 +457,15 @@ class WireguardConfiguration:
         self.DNS: str = ""
         self.Table: str = ""
         self.MTU: str = ""
+        self.Jc: str = ""
+        self.Jmin: str = ""
+        self.Jmax: str = ""
+        self.S1: str = ""
+        self.S2: str = ""
+        self.H1: str = ""
+        self.H2: str = ""
+        self.H3: str = ""
+        self.H4: str = ""
         self.PreUp: str = ""
         self.PostUp: str = ""
         self.PreDown: str = ""
@@ -497,6 +506,15 @@ class WireguardConfiguration:
                 "PrivateKey": self.PrivateKey,
                 "Address": self.Address,
                 "ListenPort": self.ListenPort,
+                "Jc": self.Jc,
+                "Jmin": self.Jmin,
+                "Jmax": self.Jmax,
+                "S1": self.S1,
+                "S2": self.S2,
+                "H1": self.H1,
+                "H2": self.H2,
+                "H3": self.H3,
+                "H4": self.H4,
                 "PreUp": self.PreUp,
                 "PreDown": self.PreDown,
                 "PostUp": self.PostUp,
@@ -532,7 +550,7 @@ class WireguardConfiguration:
                 )
                 """ % self.Name
             )
-            # sqldb.commit()
+            #sqldb.commit()
 
         if f'{self.Name}_restrict_access' not in existingTables:
             sqlUpdate(
@@ -922,6 +940,15 @@ class WireguardConfiguration:
             "PublicKey": self.PublicKey,
             "Address": self.Address,
             "ListenPort": self.ListenPort,
+            "Jc": self.Jc,
+            "Jmin": self.Jmin,
+            "Jmax": self.Jmax,
+            "S1": self.S1,
+            "S2": self.S2,
+            "H1": self.H1,
+            "H2": self.H2,
+            "H3": self.H3,
+            "H4": self.H4,
             "PreUp": self.PreUp,
             "PreDown": self.PreDown,
             "PostUp": self.PostUp,
@@ -1575,6 +1602,15 @@ def API_addWireguardConfiguration():
         "PreDown",
         "PostUp",
         "PostDown",
+        "Jc",
+        "Jmin",
+        "Jmax",
+        "S1",
+        "S2",
+        "H1",
+        "H2",
+        "H3",
+        "H4"
     ]
     requiredKeys = [
         "ConfigurationName", "Address", "ListenPort", "PrivateKey"

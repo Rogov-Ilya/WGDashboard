@@ -292,6 +292,28 @@
 				presharedKey: keyToBase64(presharedKey)
 			};
 		},
+		generateAwgMarker:function (){
+			var Jc = Math.floor((Math.random()*124)+3)
+			var	Jmin = Math.floor((Math.random()*697)+3)
+			var	Jmax = Math.floor((Math.random()*(1270 - Jmin + 1)+ Jmin))
+			var	S1 = Math.floor((Math.random()*124)+3)
+			var	S2 = Math.floor((Math.random()*124)+3)
+			var	H1 = 1
+			var	H2 = 2
+			var	H3 = 3
+			var	H4 = 4
+			return {
+				Jc: keyToBase64(Jc),
+				Jmin: keyToBase64(Jmin),
+				Jmax: keyToBase64(Jmax),
+				S1: keyToBase64(S1),
+				S2: keyToBase64(S2),
+				H1: keyToBase64(H1),
+				H2: keyToBase64(H2),
+				H3: keyToBase64(H3),
+				H4: keyToBase64(H4)
+			}
+		},
 		generatePublicKey: function (privateKey){
 			privateKey = base64ToKey(privateKey);
 			return keyToBase64(generatePublicKey(privateKey));

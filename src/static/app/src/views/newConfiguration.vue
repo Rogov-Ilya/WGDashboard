@@ -22,8 +22,17 @@ export default {
 				PreUp: "",
 				PreDown: "",
 				PostUp: "",
-				PostDown: ""
-			},
+				PostDown: "",
+        Jc:"",
+        Jmin:"",
+        Jmax:"",
+        S1:"",
+        S2:"",
+        H1:"",
+        H2:"",
+        H3:"",
+        H4:"",
+      },
 			numberOfAvailableIPs: "0",
 			error: false,
 			errorMessage: "",
@@ -40,6 +49,16 @@ export default {
 			this.newConfiguration.PrivateKey = wg.privateKey;
 			this.newConfiguration.PublicKey = wg.publicKey;
 			this.newConfiguration.PresharedKey = wg.presharedKey;
+      const awg = window.wireguard.generateAwgMarker();
+      this.newConfiguration.Jc = awg.Jc;
+      this.newConfiguration.Jmin = awg.Jmin;
+      this.newConfiguration.Jmax = awg.Jmax;
+      this.newConfiguration.S1 = awg.S1;
+      this.newConfiguration.S2 = awg.S2;
+      this.newConfiguration.H1 = awg.H1;
+      this.newConfiguration.H2 = awg.H2;
+      this.newConfiguration.H3 = awg.H3;
+      this.newConfiguration.H4 = awg.H4;
 		},
 		async saveNewConfiguration(){
 			if (this.goodToSubmit){
@@ -142,7 +161,7 @@ export default {
 				<div class="card rounded-3 shadow">
 					<div class="card-header">Configuration Name</div>
 					<div class="card-body">
-						<input type="text" class="form-control" placeholder="ex. wg1" id="ConfigurationName" 
+						<input type="text" class="form-control" placeholder="ex. awg1" id="ConfigurationName"
 						       v-model="this.newConfiguration.ConfigurationName"
 						       :disabled="this.loading"
 						       required>
@@ -259,6 +278,60 @@ export default {
 										<input type="text" class="form-control" id="postDown" v-model="this.newConfiguration.PostDown">
 									</div>
 								</div>
+                <div class="card rounded-3">
+									<div class="card-header">Jc</div>
+									<div class="card-body">
+										<input type="text" class="form-control" id="Jc" v-model="this.newConfiguration.Jc">
+									</div>
+								</div>
+                <div class="card rounded-3">
+									<div class="card-header">Jmin</div>
+									<div class="card-body">
+										<input type="text" class="form-control" id="Jmin" v-model="this.newConfiguration.Jmin">
+									</div>
+								</div>
+                <div class="card rounded-3">
+									<div class="card-header">Jmax</div>
+									<div class="card-body">
+										<input type="text" class="form-control" id="Jmax" v-model="this.newConfiguration.Jmax">
+									</div>
+								</div>
+                <div class="card rounded-3">
+									<div class="card-header">S1</div>
+									<div class="card-body">
+										<input type="text" class="form-control" id="S1" v-model="this.newConfiguration.S1">
+									</div>
+								</div>
+                <div class="card rounded-3">
+									<div class="card-header">S2</div>
+									<div class="card-body">
+										<input type="text" class="form-control" id="S2" v-model="this.newConfiguration.S2">
+									</div>
+								</div>
+                <div class="card rounded-3">
+									<div class="card-header">H1</div>
+									<div class="card-body">
+										<input type="text" class="form-control" id="H1" v-model="this.newConfiguration.H1">
+									</div>
+								</div>
+                <div class="card rounded-3">
+									<div class="card-header">H2</div>
+									<div class="card-body">
+										<input type="text" class="form-control" id="H2" v-model="this.newConfiguration.H2">
+									</div>
+								</div>
+                <div class="card rounded-3">
+									<div class="card-header">H3</div>
+									<div class="card-body">
+										<input type="text" class="form-control" id="H3" v-model="this.newConfiguration.H3">
+									</div>
+								</div>
+                <div class="card rounded-3">
+									<div class="card-header">H4</div>
+									<div class="card-body">
+										<input type="text" class="form-control" id="H4" v-model="this.newConfiguration.H4">
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -284,8 +357,6 @@ export default {
 					
 				</button>
 			</form>
-			
-			
 		</div>
 	</div>
 </template>

@@ -46,29 +46,33 @@ RUN mkdir -p /setup/conf && mkdir /setup/app && mkdir ${WGDASH}
 COPY ./src /setup/app/src
 
 # Set the volume to be used for WireGuard configuration persistency.
+VOLUME /setup/app/src
 VOLUME etc/amnezia/amneziawg/
 VOLUME ${WGDASH}
 #Create config awg
-RUN mkdir -p ~/awg && \
-    cd ~/awg/ && \
-    wget -O awgcfg.py https://gist.githubusercontent.com/remittor/8c3d9ff293b2ba4b13c367cc1a69f9eb/raw/awgcfg.py
-# Generate basic WireGuard interface. Echoing the WireGuard interface config for readability, adjust if you want it for efficiency.
-# Also setting the pipefail option, verbose: https://github.com/hadolint/hadolint/wiki/DL4006.
-#SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-#RUN out_adapt=$(ip -o -4 route show to default | awk '{print $NF}') \
-#  && echo -e "[Interface]\n\
-#Address = ${wg_net}/24\n\
-#PrivateKey =\n\
-#PostUp = iptables -t nat -I POSTROUTING 1 -s ${wg_net}/24 -o ${out_adapt} -j MASQUERADE\n\
-#PostUp = iptables -I FORWARD -i awg0 -o awg0 -j DROP\n\
-#PreDown = iptables -t nat -D POSTROUTING -s ${wg_net}/24 -o ${out_adapt} -j MASQUERADE\n\
-#PreDown = iptables -D FORWARD -i awg0 -o awg0 -j DROP\n\
-#ListenPort = ${wg_port}\n\
-#SaveConfig = true\n\
-#DNS = ${global_dns}" > /setup/conf/awg0.conf \
-#  && chmod 600 /setup/conf/awg0.conf
-CMD ["pyton","awgcfg.py --make /etc/amnezia/amneziawg/awg0.conf -i ${wg_net} -p ${wg_port}"]
-# Defining a way for Docker to check the health of the container. In this case: checking the login URL.
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+RUN out_adapt=$(ip -o -4 route show to default | awk '{print $NF}') \
+  && echo -e "[Interface]\n\
+Address = ${wg_net}/24\n\
+PrivateKey =\n\
+Jc = \n\
+Jmin = \n\
+Jmax = \n\
+S1 = \n\
+S2 = \n\
+H1 = \n\
+H2 = \n\
+H3 = \n\
+H4 = \n\
+PostUp = iptables -t nat -I POSTROUTING 1 -s ${wg_net}/24 -o ${out_adapt} -j MASQUERADE\n\
+PostUp = iptables -I FORWARD -i wg0 -o wg0 -j DROP\n\
+PreDown = iptables -t nat -D POSTROUTING -s ${wg_net}/24 -o ${out_adapt} -j MASQUERADE\n\
+PreDown = iptables -D FORWARD -i wg0 -o wg0 -j DROP\n\
+ListenPort = ${wg_port}\n\
+SaveConfig = true\n\
+DNS = ${global_dns}" > /setup/conf/awg0.conf \
+  && chmod 600 /setup/conf/awg0.conf
+
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD sh -c 'pgrep gunicorn > /dev/null && pgrep tail > /dev/null' || exit 1
 
