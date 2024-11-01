@@ -1,0 +1,48 @@
+networks:
+    default:
+        driver: bridge
+    npm_proxy:
+        name: npm_proxy
+        driver: bridge
+        ipam:
+            config:
+                - subnet: 172.50.0.0/24
+
+services:
+  wgdashboard:
+#    image: WGDashboard:latest
+    build: .
+#     context: .
+#     dockerfile: Dockerfile
+#    restart: unless-stopped
+    container_name: wire-dash
+    sysctls:
+      - net.ipv4.ip_forward=1
+      - net.ipv4.conf.all.forwarding=1
+      - net.ipv4.conf.all.src_valid_mark=1
+    environment:
+#      - APP_PREFIX=/wgdashboard
+      - TZ=Europe/Moscow
+      - GLOBAL_DNS=8.8.8.8
+      - ENABLE=wg0,wg1,wg2
+      - PUBLIC_IP=192.168.88.88
+    networks:
+          npm_proxy:
+              ipv4_address: 172.50.0.10
+    ports:
+      - 10086:10086/tcp
+      - 51820-51830:51820-51830/udp
+    volumes:
+      - ./conf:/etc/amnezia/amneziawg/
+      - ./app_conf:/opt/wireguarddashboard/src/app_conf
+      - ./log:/opt/wireguarddashboard/src/log
+    cap_add:
+      - NET_ADMIN
+    # labels:
+    #      - "traefik.enable=true"
+    #      - "traefik.docker.network=npm_proxy"
+    #      - "traefik.http.routers.wireguard-dashboard.rule=Host(`your_host`) && PathPrefix(`/wgdashboard`, `/static`)"
+    #      - "traefik.http.routers.wireguard-dashboard.entrypoints=websecure"
+    #      - "traefik.http.routers.wireguard-dashboard.tls=true"
+    #      - "traefik.http.services.wireguard-dashboard.loadbalancer.server.port=10086"
+    

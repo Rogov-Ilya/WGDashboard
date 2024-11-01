@@ -1,54 +1,71 @@
-FROM golang:1.22.3 AS awg
-COPY ./Amnezia /awg
-WORKDIR /awg
-RUN go mod download && \
-    go mod verify && \
-    go build -ldflags '-linkmode external -extldflags "-fno-PIC -static"' -v -o /usr/bin
-
 #ALpine
-FROM alpine:latest AS build
+FROM ubuntu:22.04 AS build
 LABEL maintainer="dselen@nerthus.nl"
 
 # Declaring environment variables, change Peernet to an address you like, standard is a 24 bit subnet.
 ARG wg_net="10.0.0.1"
 ARG wg_port="51820"
-
 # Following ENV variables are changable on container runtime because /entrypoint.sh handles that. See compose.yaml for more info.
-ENV TZ="Europe/Amsterdam"
+ENV TZ="Europe/Moscow"
 ENV global_dns="1.1.1.1"
 ENV enable="none"
 ENV isolate="awg0"
 ENV public_ip="0.0.0.0"
 
+#Set time zone
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 # Doing package management operations, such as upgrading
-RUN apk update \
-  && apk add --no-cache bash git tzdata\
-  iptables ip6tables openrc curl wget iproute2\
-  sudo py3-psutil py3-bcrypt
+RUN apt-get -y update && apt-get -y upgrade
+#Install package
+RUN apt-get -y install \
+    bash \
+    git \
+    tzdata \
+    iptables \
+    curl \
+    wget \
+    iproute2 \
+    procps \
+    iputils-ping \
+    software-properties-common \
+    && apt-get remove -y linux-image-* --autoremove \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# AWG Realise
-ARG AWGTOOLS_RELEASE="1.0.20241018"
-# AWG Install
-RUN cd /usr/bin/ && \
-    wget https://github.com/amnezia-vpn/amneziawg-tools/releases/download/v${AWGTOOLS_RELEASE}/alpine-3.19-amneziawg-tools.zip && \
-    unzip -j alpine-3.19-amneziawg-tools.zip && \
-    chmod +x /usr/bin/awg /usr/bin/awg-quick && \
-    ln -s /usr/bin/awg /usr/bin/wg && \
-    ln -s /usr/bin/awg-quick /usr/bin/wg-quick
-COPY --from=awg /usr/bin/amneziawg-go /usr/bin/amneziawg-go
+RUN cp -f /etc/apt/sources.list /etc/apt/sources.list.backup && \
+    sed "s/# deb-src/deb-src/" /etc/apt/sources.list.backup > /etc/apt/sources.list
 
-# Using WGDASH -- like wg_net functionally as a ARG command. But it is needed in entrypoint.sh so it needs to be exported as environment variable.
-ENV WGDASH=/opt/wireguarddashboard
 
-# Removing the Linux Image package to preserve space on the image, for this reason also deleting apt lists, to be able to install packages: run apt update.
+RUN apt-get -y update && apt-get -y upgrade
+RUN mkdir -p ~/awg &&\
+    cd ~/awg
+
+RUN echo "net.ipv4.ip_forward = 1" > /etc/sysctl.d/00-amnezia.conf
+
+RUN add-apt-repository ppa:deadsnakes/ppa
+
+RUN apt-get -y install \
+        python3-psutil \
+        python3-bcrypt \
+        python3-pip \
+        python3-venv
+
+RUN pip install qrcode
+
+RUN add-apt-repository -y ppa:amnezia/ppa && \
+    apt install -y amneziawg
 
 # Doing WireGuard Dashboard installation measures. Modify the git clone command to get the preferred version, with a specific branch for example.
-RUN mkdir -p /setup/conf && mkdir /setup/app && mkdir ${WGDASH}
+ENV WGDASH=/opt/wireguarddashboard
+RUN mkdir -p /setup/conf && \
+    mkdir /setup/app &&  \
+    mkdir ${WGDASH}
 COPY ./src /setup/app/src
 
 # Set the volume to be used for WireGuard configuration persistency.
 VOLUME etc/amnezia/amneziawg/
 VOLUME ${WGDASH}
+
 #Create config awg
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN out_adapt=$(ip -o -4 route show to default | awk '{print $NF}') \

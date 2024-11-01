@@ -1,8 +1,8 @@
 services:
   wireguard-dashboard:
-    image: WGDasboard:latest
+    image: ubuntu:22.04
     restart: unless-stopped
-    container_name: wgdashboard
+    container_name: WGDashboard
     environment:
       #- tz=                # <--- Set container timezone, default: Europe/Amsterdam.
       - global_dns=9.9.9.9        # <--- Set global DNS address, default: 1.1.1.1.
