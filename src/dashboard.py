@@ -453,6 +453,15 @@ class WireguardConfiguration:
         self.Address: str = ""
         self.DNS: str = ""
         self.Table: str = ""
+        self.Jc: str = str(random.randint(3,11))
+        self.Jmin: str = "50"
+        self.Jmax: str = "1000"
+        self.S1: str = str(random.randint(5,151))
+        self.S2: str = str(random.randint(5,151))
+        self.H1: str = str(random.randint(5,2147483647 ))
+        self.H2: str = str(random.randint(5,2147483647 ))
+        self.H3: str = str(random.randint(5,2147483647 ))
+        self.H4: str = str(random.randint(5,2147483647 ))
         self.MTU: str = ""
         self.PreUp: str = ""
         self.PostUp: str = ""
@@ -490,6 +499,15 @@ class WireguardConfiguration:
                 "PrivateKey": self.PrivateKey,
                 "Address": self.Address,
                 "ListenPort": self.ListenPort,
+                "Jc": self.Jc,
+                "Jmin": self.Jmin,
+                "Jmax": self.Jmax,
+                "S1": self.S1,
+                "S2": self.S2,
+                "H1": self.H1,
+                "H2": self.H2,
+                "H3": self.H3,
+                "H4": self.H4,
                 "PreUp": self.PreUp,
                 "PreDown": self.PreDown,
                 "PostUp": self.PostUp,
@@ -1257,6 +1275,15 @@ MTU = {str(self.mtu)}
         if len(self.DNS) > 0:
             peerConfiguration += f"DNS = {self.DNS}\n"
         peerConfiguration += f'''
+Jc = {self.configuration.Jc}
+Jmin = {self.configuration.Jmin}
+Jmax = {self.configuration.Jmax}
+S1 = {self.configuration.S1}
+S2 = {self.configuration.S2}
+H1 = {self.configuration.H1}
+H2 = {self.configuration.H2}
+H3 = {self.configuration.H3}
+H4 = {self.configuration.H4}
 [Peer]
 PublicKey = {self.configuration.PublicKey}
 AllowedIPs = {self.endpoint_allowed_ip}
@@ -1320,7 +1347,7 @@ class DashboardConfig:
                 "totp_key": pyotp.random_base32()
             },
             "Server": {
-                "wg_conf_path": "/etc/wireguard",
+                "wg_conf_path": "/etc/amnezia/amneziawg",
                 "app_prefix": "",
                 "app_ip": "0.0.0.0",
                 "app_port": "10086",
