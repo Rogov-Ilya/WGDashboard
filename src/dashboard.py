@@ -440,7 +440,27 @@ class WireguardConfiguration:
 
     def __init__(self, name: str = None, data: dict = None, backup: dict = None, startup: bool = False):
         
+        Jc = random.randint(3,11)
+        S1 = random.randint(5,151)
+        S2 = random.randint(5,151)
+        H1 = random.randint(5,2147483647 )
+        H2 = random.randint(5,2147483647 )
+        H3 = random.randint(5,2147483647 )
+        H4 = random.randint(5,2147483647 )
+
+        while (S1+56)==S2 :
+            S1 = random.randint(5,151)
+            
+        def parameters_unique(param1, param2, param3, param4):
+            unique_params = {param1, param2, param3, param4}
+            return len(unique_params) == 4
         
+        while parameters_unique(H1,H2,H3,H4):
+            H1 = random.randint(5,2147483647 )
+            H2 = random.randint(5,2147483647 )
+            H3 = random.randint(5,2147483647 )
+            H4 = random.randint(5,2147483647 )   
+
         self.__parser: configparser.ConfigParser = configparser.ConfigParser(strict=False)
         self.__parser.optionxform = str
         self.__configFileModifiedTime = None
@@ -453,15 +473,15 @@ class WireguardConfiguration:
         self.Address: str = ""
         self.DNS: str = ""
         self.Table: str = ""
-        self.Jc: str = str(random.randint(3,11))
+        self.Jc: str = Jc
         self.Jmin: str = "50"
         self.Jmax: str = "1000"
-        self.S1: str = str(random.randint(5,151))
-        self.S2: str = str(random.randint(5,151))
-        self.H1: str = str(random.randint(5,2147483647 ))
-        self.H2: str = str(random.randint(5,2147483647 ))
-        self.H3: str = str(random.randint(5,2147483647 ))
-        self.H4: str = str(random.randint(5,2147483647 ))
+        self.S1: str = S1
+        self.S2: str = S2
+        self.H1: str = H1
+        self.H2: str = H2
+        self.H3: str = H3
+        self.H4: str = H4
         self.MTU: str = ""
         self.PreUp: str = ""
         self.PostUp: str = ""
