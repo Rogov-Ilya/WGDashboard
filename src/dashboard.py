@@ -459,7 +459,7 @@ class WireguardConfiguration:
             H1 = random.randint(5,2147483647)
             H2 = random.randint(5,2147483647)
             H3 = random.randint(5,2147483647)
-            H4 = random.randint(5,2147483647)   
+            H4 = random.randint(5,2147483647)
 
         self.__parser: configparser.ConfigParser = configparser.ConfigParser(strict=False)
         self.__parser.optionxform = str
@@ -473,6 +473,7 @@ class WireguardConfiguration:
         self.Address: str = ""
         self.DNS: str = ""
         self.Table: str = ""
+        self.Jc: str = Jc
         self.Jc: str = Jc
         self.Jmin: str = "50"
         self.Jmax: str = "1000"
