@@ -440,28 +440,6 @@ class WireguardConfiguration:
 
     def __init__(self, name: str = None, data: dict = None, backup: dict = None, startup: bool = False):
         
-        Jc = random.randint(3,11)
-        S1 = random.randint(5,151)
-        S2 = random.randint(5,151)
-        H1 = random.randint(5,2147483647)
-        H2 = random.randint(5,2147483647)
-        H3 = random.randint(5,2147483647)
-        H4 = random.randint(5,2147483647)
-
-        while (S1+56)==S2 :
-            S1 = random.randint(5,151)
-            
-        def parameters_unique(param1, param2, param3, param4):
-            unique_params = {param1, param2, param3, param4}
-            return len(unique_params) == 4
-        
-        while not parameters_unique(H1,H2,H3,H4):
-            H1 = random.randint(5,2147483647)
-            H2 = random.randint(5,2147483647)
-            H3 = random.randint(5,2147483647)
-            H4 = random.randint(5,2147483647)
-            H4 = random.randint(5,2147483647)
-
         self.__parser: configparser.ConfigParser = configparser.ConfigParser(strict=False)
         self.__parser.optionxform = str
         self.__configFileModifiedTime = None
@@ -507,8 +485,6 @@ class WireguardConfiguration:
             
         else:
             self.Name = data["ConfigurationName"]
-            
-            self.PostDown = f"iptables -D INPUT -p udp --dport {data['ListenPort']} -m conntrack --ctstate NEW -j ACCEPT --wait 10 --wait-interval 50; iptables -D FORWARD -i eth0 -o {data['ConfigurationName']} -j ACCEPT --wait 10 --wait-interval 50; iptables -D FORWARD -i {data['ConfigurationName']} -j ACCEPT --wait 10 --wait-interval 50; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE --wait 10 --wait-interval 50; ip6tables -D FORWARD -i {data['ConfigurationName']} -j ACCEPT --wait 10 --wait-interval 50; ip6tables -t nat -D POSTROUTING -o eth0 -j MASQUERADE --wait 10 --wait-interval 50"
             self.__configPath = os.path.join(DashboardConfig.GetConfig("Server", "wg_conf_path")[1], f'{self.Name}.conf')
             for i in dir(self):
                 if str(i) in data.keys():
@@ -516,6 +492,29 @@ class WireguardConfiguration:
                         setattr(self, i, _strToBool(data[i]))
                     else:
                         setattr(self, i, str(data[i]))
+            
+            Jc = random.randint(3,11)
+            S1 = random.randint(5,151)
+            S2 = random.randint(5,151)
+            H1 = random.randint(5,2147483647)
+            H2 = random.randint(5,2147483647)
+            H3 = random.randint(5,2147483647)
+            H4 = random.randint(5,2147483647)
+
+            while (S1+56)==S2 :
+                S1 = random.randint(5,151)
+            
+            def parameters_unique(param1, param2, param3, param4):
+                unique_params = {param1, param2, param3, param4}
+                return len(unique_params) == 4
+        
+            while not parameters_unique(H1,H2,H3,H4):
+                H1 = random.randint(5,2147483647)
+                H2 = random.randint(5,2147483647)
+                H3 = random.randint(5,2147483647)
+                H4 = random.randint(5,2147483647)
+                H4 = random.randint(5,2147483647)
+
             if data.get('PostUp') == "":
                 self.PostUp = f"iptables -A INPUT -p udp --dport {data['ListenPort']} -m conntrack --ctstate NEW -j ACCEPT --wait 10 --wait-interval 50; iptables -A FORWARD -i eth0 -o {data['ConfigurationName']} -j ACCEPT --wait 10 --wait-interval 50; iptables -A FORWARD -i {data['ConfigurationName']} -j ACCEPT --wait 10 --wait-interval 50; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE --wait 10 --wait-interval 50; ip6tables -A FORWARD -i {data['ConfigurationName']} -j ACCEPT --wait 10 --wait-interval 50; ip6tables -t nat -A POSTROUTING -o eth0 -j MASQUERADE --wait 10 --wait-interval 50"
             if data.get('PostDown') =="":
@@ -529,6 +528,7 @@ class WireguardConfiguration:
             self.H2: str = H2
             self.H3: str = H3
             self.H4: str = H4
+
             self.__parser["Interface"] = {
                 "PrivateKey": self.PrivateKey,
                 "Address": self.Address,
