@@ -485,9 +485,9 @@ class WireguardConfiguration:
         self.H4: str = H4
         self.MTU: str = ""
         self.PreUp: str = ""
-        self.PostUp: str = ""
+        self.PostUp: str = "iptables -A INPUT -p udp --dport "+{data['ListenPort']}+" -m conntrack --ctstate NEW -j ACCEPT --wait 10 --wait-interval 50; iptables -A FORWARD -i eth0 -o "+{data['ConfigurationName']}+" -j ACCEPT --wait 10 --wait-interval 50; iptables -A FORWARD -i "+{data['ConfigurationName']}+" -j ACCEPT --wait 10 --wait-interval 50; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE --wait 10 --wait-interval 50; ip6tables -A FORWARD -i "+{data['ConfigurationName']}+" -j ACCEPT --wait 10 --wait-interval 50; ip6tables -t nat -A POSTROUTING -o eth0 -j MASQUERADE --wait 10 --wait-interval 50"
         self.PreDown: str = ""
-        self.PostDown: str = ""
+        self.PostDown: str = "iptables -D INPUT -p udp --dport "+{data['ListenPort']}+" -m conntrack --ctstate NEW -j ACCEPT --wait 10 --wait-interval 50; iptables -D FORWARD -i eth0 -o "+{data['ConfigurationName']}+" -j ACCEPT --wait 10 --wait-interval 50; iptables -D FORWARD -i "+{data['ConfigurationName']}+" -j ACCEPT --wait 10 --wait-interval 50; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE --wait 10 --wait-interval 50; ip6tables -D FORWARD -i "+{data['ConfigurationName']}+" -j ACCEPT --wait 10 --wait-interval 50; ip6tables -t nat -D POSTROUTING -o eth0 -j MASQUERADE --wait 10 --wait-interval 50"
         self.SaveConfig: bool = True
         self.Name = name
         self.__configPath = os.path.join(DashboardConfig.GetConfig("Server", "wg_conf_path")[1], f'{self.Name}.conf')
@@ -508,7 +508,6 @@ class WireguardConfiguration:
         else:
             self.Name = data["ConfigurationName"]
             self.__configPath = os.path.join(DashboardConfig.GetConfig("Server", "wg_conf_path")[1], f'{self.Name}.conf')
-            
             for i in dir(self):
                 if str(i) in data.keys():
                     if isinstance(getattr(self, i), bool):
