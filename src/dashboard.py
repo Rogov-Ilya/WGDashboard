@@ -474,20 +474,20 @@ class WireguardConfiguration:
         self.Address: str = ""
         self.DNS: str = ""
         self.Table: str = ""
-        self.Jc: str = Jc
-        self.Jmin: str = "50"
-        self.Jmax: str = "1000"
-        self.S1: str = S1
-        self.S2: str = S2
-        self.H1: str = H1
-        self.H2: str = H2
-        self.H3: str = H3
-        self.H4: str = H4
+        self.Jc: str = ""
+        self.Jmin: str = ""
+        self.Jmax: str = ""
+        self.S1: str = ""
+        self.S2: str = ""
+        self.H1: str = ""
+        self.H2: str = ""
+        self.H3: str = ""
+        self.H4: str = ""
         self.MTU: str = ""
         self.PreUp: str = ""
-        self.PostUp: str = "iptables -A INPUT -p udp --dport "+{data['ListenPort']}+" -m conntrack --ctstate NEW -j ACCEPT --wait 10 --wait-interval 50; iptables -A FORWARD -i eth0 -o "+{data['ConfigurationName']}+" -j ACCEPT --wait 10 --wait-interval 50; iptables -A FORWARD -i "+{data['ConfigurationName']}+" -j ACCEPT --wait 10 --wait-interval 50; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE --wait 10 --wait-interval 50; ip6tables -A FORWARD -i "+{data['ConfigurationName']}+" -j ACCEPT --wait 10 --wait-interval 50; ip6tables -t nat -A POSTROUTING -o eth0 -j MASQUERADE --wait 10 --wait-interval 50"
+        self.PostUp: str = ""
         self.PreDown: str = ""
-        self.PostDown: str = "iptables -D INPUT -p udp --dport "+{data['ListenPort']}+" -m conntrack --ctstate NEW -j ACCEPT --wait 10 --wait-interval 50; iptables -D FORWARD -i eth0 -o "+{data['ConfigurationName']}+" -j ACCEPT --wait 10 --wait-interval 50; iptables -D FORWARD -i "+{data['ConfigurationName']}+" -j ACCEPT --wait 10 --wait-interval 50; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE --wait 10 --wait-interval 50; ip6tables -D FORWARD -i "+{data['ConfigurationName']}+" -j ACCEPT --wait 10 --wait-interval 50; ip6tables -t nat -D POSTROUTING -o eth0 -j MASQUERADE --wait 10 --wait-interval 50"
+        self.PostDown: str = ""
         self.SaveConfig: bool = True
         self.Name = name
         self.__configPath = os.path.join(DashboardConfig.GetConfig("Server", "wg_conf_path")[1], f'{self.Name}.conf')
@@ -507,6 +507,8 @@ class WireguardConfiguration:
             
         else:
             self.Name = data["ConfigurationName"]
+            
+            self.PostDown = f"iptables -D INPUT -p udp --dport {data['ListenPort']} -m conntrack --ctstate NEW -j ACCEPT --wait 10 --wait-interval 50; iptables -D FORWARD -i eth0 -o {data['ConfigurationName']} -j ACCEPT --wait 10 --wait-interval 50; iptables -D FORWARD -i {data['ConfigurationName']} -j ACCEPT --wait 10 --wait-interval 50; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE --wait 10 --wait-interval 50; ip6tables -D FORWARD -i {data['ConfigurationName']} -j ACCEPT --wait 10 --wait-interval 50; ip6tables -t nat -D POSTROUTING -o eth0 -j MASQUERADE --wait 10 --wait-interval 50"
             self.__configPath = os.path.join(DashboardConfig.GetConfig("Server", "wg_conf_path")[1], f'{self.Name}.conf')
             for i in dir(self):
                 if str(i) in data.keys():
@@ -514,7 +516,19 @@ class WireguardConfiguration:
                         setattr(self, i, _strToBool(data[i]))
                     else:
                         setattr(self, i, str(data[i]))
-            
+            if data.get('PostUp') == "":
+                self.PostUp = f"iptables -A INPUT -p udp --dport {data['ListenPort']} -m conntrack --ctstate NEW -j ACCEPT --wait 10 --wait-interval 50; iptables -A FORWARD -i eth0 -o {data['ConfigurationName']} -j ACCEPT --wait 10 --wait-interval 50; iptables -A FORWARD -i {data['ConfigurationName']} -j ACCEPT --wait 10 --wait-interval 50; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE --wait 10 --wait-interval 50; ip6tables -A FORWARD -i {data['ConfigurationName']} -j ACCEPT --wait 10 --wait-interval 50; ip6tables -t nat -A POSTROUTING -o eth0 -j MASQUERADE --wait 10 --wait-interval 50"
+            if data.get('PostDown') =="":
+                self.PostDown = f"iptables -D INPUT -p udp --dport {data['ListenPort']} -m conntrack --ctstate NEW -j ACCEPT --wait 10 --wait-interval 50; iptables -D FORWARD -i eth0 -o {data['ConfigurationName']} -j ACCEPT --wait 10 --wait-interval 50; iptables -D FORWARD -i {data['ConfigurationName']} -j ACCEPT --wait 10 --wait-interval 50; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE --wait 10 --wait-interval 50; ip6tables -D FORWARD -i {data['ConfigurationName']} -j ACCEPT --wait 10 --wait-interval 50; ip6tables -t nat -D POSTROUTING -o eth0 -j MASQUERADE --wait 10 --wait-interval 50"
+            self.Jc: str = Jc
+            self.Jmin: str = "50"
+            self.Jmax: str = "1000"
+            self.S1: str = S1
+            self.S2: str = S2
+            self.H1: str = H1
+            self.H2: str = H2
+            self.H3: str = H3
+            self.H4: str = H4
             self.__parser["Interface"] = {
                 "PrivateKey": self.PrivateKey,
                 "Address": self.Address,
